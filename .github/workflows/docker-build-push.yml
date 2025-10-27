@@ -38,7 +38,7 @@ jobs:
           if [ -f "services/kanban/VERSION" ]; then
             VERSION=$(cat services/kanban/VERSION)
           else
-            VERSION="0.1.0"
+            VERSION="0.1.1"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Building version: $VERSION"
