@@ -16,6 +16,10 @@ RUN apk add --no-cache libpq curl
 COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
+# 비루트 사용자 생성 및 사용 (보안 강화)
+RUN adduser -D appuser
+USER appuser
+
 # .dockerignore를 통해 tests/, docs 등은 제외됨
 COPY . .
 
