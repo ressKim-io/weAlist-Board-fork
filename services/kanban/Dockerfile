@@ -13,17 +13,25 @@ WORKDIR /app
 
 RUN apk add --no-cache libpq curl
 
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
-
-# 비루트 사용자 생성 및 사용 (보안 강화)
+# 비루트 사용자 생성
 RUN adduser -D appuser
+
+# appuser의 홈 디렉토리로 패키지 복사 (핵심 수정)
+COPY --from=builder /root/.local /home/appuser/.local
+
+# appuser 소유권 설정
+RUN chown -R appuser:appuser /home/appuser/.local
+
+# PATH를 appuser의 로컬 bin으로 설정
+ENV PATH=/home/appuser/.local/bin:$PATH
+
+# 사용자 전환
 USER appuser
 
-# .dockerignore를 통해 tests/, docs 등은 제외됨
+# 애플리케이션 코드 복사
 COPY . .
 
-# 환경변수 기본값 (docker-compose에서 오버라이드 가능)
+# 환경변수 기본값
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
@@ -32,5 +40,5 @@ HEALTHCHECK --interval=30s --timeout=3s \
 
 EXPOSE 8000
 
-# Production mode (--reload 제거)
+# Production mode
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
